@@ -277,3 +277,5 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- Incidencia #1 corregida: Total general de sp_ca1 aparece como "Subtotal". Solución: agrupar en una tabla derivada y calcular las etiquetas en la consulta externa.
