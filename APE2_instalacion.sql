@@ -728,3 +728,5 @@ DELIMITER ;
 -- Incidencia #6 corregida: Error #1305: FUNCTION fn_tipo_producto does not exist. Solución: crear primero las 4 funciones y después los procedimientos, respetando el orden del script APE2_instalacion.sql.
 
 -- Incidencia #7 corregida: Error #1044: acceso denegado a information_schema al crear funciones. Solución: escribir el nombre de la base antes de cada función (gestion_investigacion.fn_...) y quitar la consulta de verificación del script.
+
+-- Incidencia #8 corregida: Error #1304: FUNCTION fn_tipo_producto already exists. Solución: usar DROP FUNCTION IF EXISTS antes de cada CREATE FUNCTION.
