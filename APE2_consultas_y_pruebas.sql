@@ -171,3 +171,5 @@ SELECT r.id_proyecto, r.total_productos AS resumen,
 
 -- P12 | Secuencia de producto repetida -> ERROR 1062 (UNIQUE uq_producto_secuencia)
 -- INSERT INTO productos (id_proyecto, titulo, num_secuencia) VALUES (5, 'Producto duplicado', 1);
+
+-- Incidencia #9 corregida: Error #2014: Commands out of sync al ejecutar el script completo. Solución: separar el script en APE2_instalacion.sql (sin CALL, se importa de una vez) y APE2_consultas_y_pruebas.sql (se ejecuta consulta por consulta).
