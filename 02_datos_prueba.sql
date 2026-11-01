@@ -112,3 +112,5 @@ INSERT INTO libro (id_producto, isbn, editorial, lugar_publicacion, fecha_public
 INSERT INTO patentes (num_registro, id_producto, estado, pais_registro, fecha_concesion, clasificacion_inter, num_solicitud, fecha_solicitud) VALUES
 ('SENADI-2025-0457', 6, 'Concedida', 'Ecuador', '2026-04-18', 'G06T 7/00', 'SOL-2025-0457', '2025-05-02'),
 ('SENADI-2026-0112', 9, 'Solicitada', 'Ecuador', NULL, 'A01G 25/16', 'SOL-2026-0112', '2026-02-14');
+
+-- Incidencia #2 corregida: Tildes mal guardadas y mensajes de triggers con caracteres raros. Solución: importar los scripts con el juego de caracteres utf-8 (utf8mb4) y volver a crear la base.
