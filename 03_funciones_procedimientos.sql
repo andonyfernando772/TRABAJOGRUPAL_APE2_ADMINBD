@@ -281,3 +281,5 @@ DELIMITER ;
 -- Incidencia #1 corregida: Total general de sp_ca1 aparece como "Subtotal". Solución: agrupar en una tabla derivada y calcular las etiquetas en la consulta externa.
 
 -- Incidencia #3 corregida: sp_ca5 muestra días restantes negativos. Solución: usar GREATEST(DATEDIFF(...), 0) y mostrar "Indefinido" cuando no hay fecha de fin.
+
+-- Incidencia #4 corregida: sp_cm5 muestra NULL en la fecha de las revistas. Solución: mostrar "No registra" con IFNULL, sin modificar el modelo.
