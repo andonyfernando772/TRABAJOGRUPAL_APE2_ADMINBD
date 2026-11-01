@@ -724,3 +724,5 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- Incidencia #6 corregida: Error #1305: FUNCTION fn_tipo_producto does not exist. Solución: crear primero las 4 funciones y después los procedimientos, respetando el orden del script APE2_instalacion.sql.
