@@ -283,3 +283,5 @@ DELIMITER ;
 -- Incidencia #3 corregida: sp_ca5 muestra días restantes negativos. Solución: usar GREATEST(DATEDIFF(...), 0) y mostrar "Indefinido" cuando no hay fecha de fin.
 
 -- Incidencia #4 corregida: sp_cm5 muestra NULL en la fecha de las revistas. Solución: mostrar "No registra" con IFNULL, sin modificar el modelo.
+
+-- Incidencia #5 corregida: Títulos largos dificultan la lectura de los resultados. Solución: mostrarlos resumidos con LEFT() en los procedimientos de reporte.
