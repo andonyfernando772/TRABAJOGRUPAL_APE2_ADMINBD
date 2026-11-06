@@ -166,7 +166,8 @@ END$$
 -- ---------------------------------------------------------------------
 CREATE PROCEDURE sp_cm1_equipo_proyecto(IN p_id_proyecto INT UNSIGNED)
 BEGIN
-    SELECT p.acronimo, pp.cargo, pf.nombre, pf.telefono, pp.resolucion_ingreso
+    SELECT p.acronimo, pp.cargo, pf.nombre, pf.telefono,
+           IFNULL(pp.resolucion_ingreso, 'Desde el inicio') AS resolucion_ingreso
       FROM proyecto_investigacion p
      INNER JOIN proyecto_profesor pp ON pp.id_proyecto = p.id_proyecto
      INNER JOIN profesores pf        ON pf.id_profesor = pp.id_profesor

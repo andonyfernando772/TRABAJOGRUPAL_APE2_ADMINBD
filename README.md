@@ -21,4 +21,4 @@ Versión 2: 16 tablas según el modelo entidad relación y el modelo relacional 
 | `APE2_instalacion.sql` | Crea toda la base: modelo, datos, funciones, procedimientos y triggers |
 | `APE2_consultas_y_pruebas.sql` | Consultas de los apartados 2 y 3 y pruebas P01 a P13 |
 | `01_modelo_fisico.sql` … `05_pruebas.sql` | Scripts por separado |
-| `INCIDENCIAS.md` | Registro de las 13 incidencias |
+| `INCIDENCIAS.md` | Registro de las 14 incidencias |

@@ -71,7 +71,7 @@ CREATE TABLE proyecto_profesor (
   id_profesor         INT UNSIGNED NOT NULL,
   num_profesores      TINYINT UNSIGNED NULL,
   cargo               ENUM('Director','Director subrogante','Investigador') NOT NULL,
-  resolucion_ingreso  VARCHAR(50)  NOT NULL,
+  resolucion_ingreso  VARCHAR(50)  NULL,
   resolucion_salida   VARCHAR(50)  NULL,
   motivo_salida       VARCHAR(200) NULL,
   PRIMARY KEY (id_proyecto, id_profesor),
@@ -284,27 +284,27 @@ INSERT INTO linea_profesor (id_linea, id_profesor) VALUES
 
 INSERT INTO proyecto_profesor (id_proyecto, id_profesor, num_profesores, cargo,
        resolucion_ingreso, resolucion_salida, motivo_salida) VALUES
-(1, 1,  1, 'Director',            'RCU-UEB-2025-045', NULL, NULL),
-(1, 4,  2, 'Director subrogante', 'RCU-UEB-2025-045', NULL, NULL),
-(1, 7,  3, 'Investigador',        'RCU-UEB-2025-045', NULL, NULL),
-(1, 8,  5, 'Investigador',        'RCU-UEB-2025-061', 'RCU-UEB-2026-030', 'Cambio de dedicación a docencia'),
-(1, 12, 4, 'Investigador',        'RCU-UEB-2025-045', NULL, NULL),
-(2, 2,  1, 'Director',            'RCU-UEB-2024-118', NULL, NULL),
-(2, 5,  2, 'Director subrogante', 'RCU-UEB-2024-118', NULL, NULL),
+(1, 1,  1, 'Director',            NULL,               NULL, NULL),
+(1, 4,  2, 'Director subrogante', NULL,               NULL, NULL),
+(1, 7,  3, 'Investigador',        NULL,               NULL, NULL),
+(1, 8,  5, 'Investigador',        NULL,               'RCU-UEB-2026-030', 'Cambio de dedicación a docencia'),
+(1, 12, 4, 'Investigador',        NULL,               NULL, NULL),
+(2, 2,  1, 'Director',            NULL,               NULL, NULL),
+(2, 5,  2, 'Director subrogante', NULL,               NULL, NULL),
 (2, 9,  3, 'Investigador',        'RCU-UEB-2024-131', NULL, NULL),
-(2, 10, 4, 'Investigador',        'RCU-UEB-2024-118', NULL, NULL),
+(2, 10, 4, 'Investigador',        NULL,               NULL, NULL),
 (2, 11, 5, 'Investigador',        'RCU-UEB-2025-004', NULL, NULL),
-(3, 3,  1, 'Director',            'RCU-UEB-2025-089', NULL, NULL),
-(3, 6,  2, 'Director subrogante', 'RCU-UEB-2025-089', NULL, NULL),
-(3, 9,  3, 'Investigador',        'RCU-UEB-2025-089', NULL, NULL),
-(3, 11, 4, 'Investigador',        'RCU-UEB-2025-089', NULL, NULL),
+(3, 3,  1, 'Director',            NULL,               NULL, NULL),
+(3, 6,  2, 'Director subrogante', NULL,               NULL, NULL),
+(3, 9,  3, 'Investigador',        NULL,               NULL, NULL),
+(3, 11, 4, 'Investigador',        NULL,               NULL, NULL),
 (3, 8,  5, 'Investigador',        'RCU-UEB-2026-150', NULL, NULL),
-(4, 1,  1, 'Director',            'RCU-UEB-2023-007', 'RCU-UEB-2024-012', 'Cierre del proyecto'),
-(4, 5,  2, 'Director subrogante', 'RCU-UEB-2023-007', 'RCU-UEB-2024-012', 'Cierre del proyecto'),
-(4, 8,  3, 'Investigador',        'RCU-UEB-2023-007', 'RCU-UEB-2024-012', 'Cierre del proyecto'),
-(5, 2,  1, 'Director',            'RCU-UEB-2025-201', NULL, NULL),
-(5, 4,  2, 'Director subrogante', 'RCU-UEB-2025-201', NULL, NULL),
-(5, 7,  3, 'Investigador',        'RCU-UEB-2025-201', NULL, NULL);
+(4, 1,  1, 'Director',            NULL,               'RCU-UEB-2024-012', 'Cierre del proyecto'),
+(4, 5,  2, 'Director subrogante', NULL,               'RCU-UEB-2024-012', 'Cierre del proyecto'),
+(4, 8,  3, 'Investigador',        NULL,               'RCU-UEB-2024-012', 'Cierre del proyecto'),
+(5, 2,  1, 'Director',            NULL,               NULL, NULL),
+(5, 4,  2, 'Director subrogante', NULL,               NULL, NULL),
+(5, 7,  3, 'Investigador',        NULL,               NULL, NULL);
 
 INSERT INTO estudiante (id_estudiante, id_proyecto, nombres_est, telefono_est, departamento_facultad) VALUES
 (1, 1, 'Kevin Alexander Chela Guamán',   '0987654301', 'Facultad de Ciencias Administrativas, Gestión Empresarial e Informática'),
@@ -530,7 +530,8 @@ END$$
 -- ---------------------------------------------------------------------
 CREATE PROCEDURE sp_cm1_equipo_proyecto(IN p_id_proyecto INT UNSIGNED)
 BEGIN
-    SELECT p.acronimo, pp.cargo, pf.nombre, pf.telefono, pp.resolucion_ingreso
+    SELECT p.acronimo, pp.cargo, pf.nombre, pf.telefono,
+           IFNULL(pp.resolucion_ingreso, 'Desde el inicio') AS resolucion_ingreso
       FROM proyecto_investigacion p
      INNER JOIN proyecto_profesor pp ON pp.id_proyecto = p.id_proyecto
      INNER JOIN profesores pf        ON pf.id_profesor = pp.id_profesor

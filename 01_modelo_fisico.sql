@@ -69,7 +69,7 @@ CREATE TABLE proyecto_profesor (
   id_profesor         INT UNSIGNED NOT NULL,
   num_profesores      TINYINT UNSIGNED NULL,
   cargo               ENUM('Director','Director subrogante','Investigador') NOT NULL,
-  resolucion_ingreso  VARCHAR(50)  NOT NULL,
+  resolucion_ingreso  VARCHAR(50)  NULL,
   resolucion_salida   VARCHAR(50)  NULL,
   motivo_salida       VARCHAR(200) NULL,
   PRIMARY KEY (id_proyecto, id_profesor),
