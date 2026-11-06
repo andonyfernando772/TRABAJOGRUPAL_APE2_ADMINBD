@@ -1,66 +1,72 @@
 -- =====================================================================
--- APE 2 - Script 05: Pruebas de integración y control de calidad
--- Cada bloque @@ es un caso de prueba que se ejecuta por separado.
+-- 05. Pruebas de control de calidad (ejecutar una por una, en orden)
+--     Las pruebas que terminan en error son intencionales.
 -- =====================================================================
--- @@ P01 | Regla 4 investigadores | Agregar un 5.º investigador a SATCLIMA (debe FALLAR)
-INSERT INTO proyecto_profesor (id_proyecto, id_profesor, inicio_pro)
-VALUES (2, 12, '2026-10-29');
--- @@ P02 | Director único | Agregar un segundo Director a PLATINV (debe FALLAR)
-INSERT INTO proyecto_profesor (id_proyecto, id_profesor, inicio_pro)
-VALUES (1, 3, '2026-10-29');
--- @@ P03 | Máximo 2 proyectos | Héctor Sánchez ya está en 2 proyectos y se intenta agregarlo a IOTAGRO (debe FALLAR)
-SELECT fn_proyectos_activos(7, '2026-10-29') AS proyectos_activos_hector;
-INSERT INTO proyecto_profesor (id_proyecto, id_profesor, inicio_pro)
-VALUES (3, 7, '2026-10-29');
--- @@ P04 | Inserción válida | Fausto Escobar (sin proyectos) entra a DATABOL (debe PASAR)
-INSERT INTO proyecto_profesor (id_proyecto, id_profesor, inicio_pro)
-VALUES (5, 13, '2026-10-29');
-CALL sp_cm1_equipo_proyecto(5);
--- @@ P05 | Participación pasada no bloquea | Gabriela Mora (su proyecto ya terminó) entra a IOTAGRO (debe PASAR)
-INSERT INTO proyecto_profesor (id_proyecto, id_profesor, inicio_pro, fin_pro)
-VALUES (3, 8, '2026-11-01', '2027-10-31');
-SELECT id_proyecto, id_profesor, inicio_pro, fin_pro
-  FROM proyecto_profesor WHERE id_profesor = 8;
--- @@ P06 | CHECK del modelo físico | Fecha de fin anterior a la de inicio (debe FALLAR)
-UPDATE proyecto_profesor SET fin_pro = '2020-01-01'
- WHERE id_proyecto = 5 AND id_profesor = 13;
--- @@ P07 | Auditoría UPDATE | Se cambia el presupuesto de DATABOL
-UPDATE proyecto_investigacion SET presupuesto = 11500.00 WHERE id_proyecto = 5;
-SELECT id_auditoria, id_proyecto, operacion,
-       SUBSTRING_INDEX(datos_anteriores, '; ', -1) AS antes,
-       SUBSTRING_INDEX(datos_nuevos, '; ', -1) AS despues, usuario, fecha_hora
-  FROM auditoria_proyecto;
--- @@ P08 | Auditoría DELETE | Se elimina CIBERGAD dentro de una transacción y luego se revierte
+USE gestion_investigacion;
+
+-- P01. Trigger 1: se rechaza un quinto investigador en SATCLIMA
+INSERT INTO proyecto_profesor (id_proyecto, id_profesor, cargo, resolucion_ingreso)
+VALUES (2, 13, 'Investigador', 'RCU-UEB-2026-220');
+
+-- P02. Trigger 1: se rechaza un segundo Director en PLATINV
+INSERT INTO proyecto_profesor (id_proyecto, id_profesor, cargo, resolucion_ingreso)
+VALUES (1, 3, 'Director', 'RCU-UEB-2026-221');
+
+-- P03. Trigger 1: se rechaza a un profesor que ya está en 2 proyectos activos
+INSERT INTO proyecto_profesor (id_proyecto, id_profesor, cargo, resolucion_ingreso)
+VALUES (5, 9, 'Investigador', 'RCU-UEB-2026-222');
+
+-- P04. Trigger 1: inserción válida, num_profesores se calcula solo
+INSERT INTO proyecto_profesor (id_proyecto, id_profesor, cargo, resolucion_ingreso)
+VALUES (5, 13, 'Investigador', 'RCU-UEB-2026-223');
+SELECT id_proyecto, id_profesor, cargo, num_profesores, resolucion_ingreso
+  FROM proyecto_profesor WHERE id_proyecto = 5;
+
+-- P05. Trigger 1: un proyecto cerrado no admite nuevos profesores
+INSERT INTO proyecto_profesor (id_proyecto, id_profesor, cargo, resolucion_ingreso)
+VALUES (4, 10, 'Investigador', 'RCU-UEB-2026-224');
+
+-- P06. Modelo físico: la restricción CHECK rechaza una prórroga anterior al fin
+UPDATE proyecto_investigacion SET prorroga = '2026-01-01' WHERE id_proyecto = 1;
+
+-- P07. Trigger 2: la modificación de un proyecto queda en la auditoría
+UPDATE proyecto_investigacion
+   SET presupuesto = 12500.00, prorroga = '2027-03-31'
+ WHERE id_proyecto = 5;
+SELECT * FROM auditoria_proyecto;
+
+-- P08. Trigger 2: la eliminación queda registrada (se revierte con ROLLBACK)
 START TRANSACTION;
 DELETE FROM proyecto_investigacion WHERE id_proyecto = 4;
-SELECT id_auditoria, id_proyecto, operacion,
-       LEFT(datos_anteriores, 55) AS datos_anteriores, usuario
+SELECT id_auditoria, id_proyecto, operacion, datos_anteriores, usuario
   FROM auditoria_proyecto WHERE operacion = 'DELETE';
 ROLLBACK;
-SELECT COUNT(*) AS proyectos_despues_del_rollback FROM proyecto_investigacion;
--- @@ P09 | Registro histórico | Se amplía la fecha de fin de Ramiro Guamán en IOTAGRO
-UPDATE proyecto_profesor SET fin_pro = '2027-06-30'
- WHERE id_proyecto = 3 AND id_profesor = 9;
-SELECT id_historial, id_proyecto, id_profesor, fin_anterior, fin_nuevo, usuario
-  FROM historial_participacion;
--- @@ P10 | Tabla resumen | Se registra el primer producto de DATABOL y luego se elimina uno de prueba
-SELECT id_proyecto, total_productos
-  FROM resumen_proyecto WHERE id_proyecto = 5;
-INSERT INTO productos (id_proyecto, titulo, num_secuencia)
-VALUES (5, 'Portal de datos abiertos de la provincia Bolívar', 1);
-INSERT INTO productos (id_proyecto, titulo, num_secuencia)
-VALUES (5, 'Producto de prueba', 2);
-SELECT id_proyecto, total_productos
-  FROM resumen_proyecto WHERE id_proyecto = 5;
-DELETE FROM productos WHERE id_proyecto = 5 AND num_secuencia = 2;
-SELECT id_proyecto, total_productos
-  FROM resumen_proyecto WHERE id_proyecto = 5;
--- @@ P11 | Consistencia | El resumen coincide con el conteo real de productos
-SELECT r.id_proyecto, r.total_productos AS resumen,
-       (SELECT COUNT(*) FROM productos p WHERE p.id_proyecto = r.id_proyecto) AS conteo_real,
-       IF(r.total_productos = (SELECT COUNT(*) FROM productos p
-                               WHERE p.id_proyecto = r.id_proyecto), 'OK', 'NO COINCIDE') AS verificacion
+
+-- P09. Trigger 3: la salida de un investigador queda en el historial
+UPDATE proyecto_profesor
+   SET resolucion_salida = 'RCU-UEB-2026-230',
+       motivo_salida     = 'Licencia por estudios de doctorado'
+ WHERE id_proyecto = 1 AND id_profesor = 7;
+SELECT * FROM historial_participacion;
+
+-- P10. Trigger 4: el resumen de DATABOL sube al insertar y baja al eliminar
+INSERT INTO productos (id_proyecto, id_tipo, titulo_publicacion, num_secuencia) VALUES
+(5, 1, 'Datos abiertos y transparencia en la provincia Bolívar', 2),
+(5, 3, 'Guía de publicación de datos abiertos para GAD', 3);
+DELETE FROM productos WHERE id_proyecto = 5 AND num_secuencia = 3;
+SELECT * FROM resumen_proyecto WHERE id_proyecto = 5;
+
+-- P11. Trigger 4: el resumen coincide con el conteo real de productos
+SELECT r.id_proyecto, r.total_productos,
+       (SELECT COUNT(*) FROM productos pr WHERE pr.id_proyecto = r.id_proyecto) AS conteo_real,
+       IF(r.total_productos = (SELECT COUNT(*) FROM productos pr
+                                WHERE pr.id_proyecto = r.id_proyecto), 'Coincide', 'Revisar') AS estado
   FROM resumen_proyecto r;
--- @@ P12 | Integridad | Secuencia de producto repetida en el mismo proyecto (debe FALLAR por UNIQUE)
-INSERT INTO productos (id_proyecto, titulo, num_secuencia)
-VALUES (5, 'Producto duplicado', 1);
+
+-- P12. Modelo físico: la clave única impide repetir la secuencia de un producto
+INSERT INTO productos (id_proyecto, id_tipo, titulo_publicacion, num_secuencia)
+VALUES (5, 1, 'Producto con secuencia repetida', 1);
+
+-- P13. Modelo físico: un producto de tipo Libro no puede registrarse como revista
+INSERT INTO publicacion_revista (id_producto, nombre_revista, editorial, volumen)
+VALUES (2, 'Revista de prueba', 'Editorial UEB', '1');
